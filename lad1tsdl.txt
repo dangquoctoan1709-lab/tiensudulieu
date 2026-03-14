@@ -1,0 +1,126 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ==============================
+# ĐỌC DỮ LIỆU
+# ==============================
+df = pd.read_csv("ITA105_Lab_1.csv")
+
+print("=========== DỮ LIỆU BAN ĐẦU ===========")
+print(df.head())
+print("\n")
+
+
+# ==============================
+# BÀI 1: KHÁM PHÁ DỮ LIỆU
+# ==============================
+
+print("=========== BÀI 1: KHÁM PHÁ DỮ LIỆU ===========")
+
+# kích thước dữ liệu
+print("Kích thước dữ liệu:", df.shape)
+
+# thống kê mô tả
+print("\nThống kê mô tả:")
+print(df.describe())
+
+# kiểm tra giá trị thiếu
+print("\nGiá trị thiếu:")
+print(df.isnull().sum())
+
+
+# ==============================
+# BÀI 2: XỬ LÝ DỮ LIỆU THIẾU
+# ==============================
+
+print("\n=========== BÀI 2: XỬ LÝ DỮ LIỆU THIẾU ===========")
+
+# điền bằng mean
+df_mean = df.fillna(df.mean(numeric_only=True))
+
+# điền bằng median
+df_median = df.fillna(df.median(numeric_only=True))
+
+# điền bằng mode
+df_mode = df.fillna(df.mode().iloc[0])
+
+# so sánh với dropna
+df_drop = df.dropna()
+
+print("Số dòng sau khi dropna:", df_drop.shape[0])
+
+
+# ==============================
+# BÀI 3: XỬ LÝ DỮ LIỆU LỖI
+# ==============================
+
+print("\n=========== BÀI 3: XỬ LÝ DỮ LIỆU LỖI ===========")
+
+# Price không hợp lệ
+if 'Price' in df.columns:
+    df = df[df['Price'] > 0]
+
+# StockQuantity không hợp lệ
+if 'StockQuantity' in df.columns:
+    df = df[df['StockQuantity'] >= 0]
+
+# Rating hợp lệ từ 1 -> 5
+if 'Rating' in df.columns:
+    df = df[(df['Rating'] >= 1) & (df['Rating'] <= 5)]
+
+print("Dữ liệu sau khi lọc lỗi:")
+print(df.head())
+
+
+# ==============================
+# BÀI 4: LÀM MƯỢT DỮ LIỆU
+# ==============================
+
+print("\n=========== BÀI 4: MOVING AVERAGE ===========")
+
+if 'Price' in df.columns:
+
+    # tính moving average
+    df['Price_MA'] = df['Price'].rolling(window=3).mean()
+
+    # vẽ biểu đồ
+    plt.figure()
+
+    plt.plot(df['Price'], label="Price gốc")
+    plt.plot(df['Price_MA'], label="Moving Average")
+
+    plt.legend()
+    plt.title("Price vs Moving Average")
+    plt.xlabel("Index")
+    plt.ylabel("Price")
+
+    plt.show()
+
+
+# ==============================
+# BÀI 5: CHUẨN HÓA DỮ LIỆU
+# ==============================
+
+print("\n=========== BÀI 5: CHUẨN HÓA DỮ LIỆU ===========")
+
+# Category -> chữ thường
+if 'Category' in df.columns:
+    df['Category'] = df['Category'].str.lower()
+
+# xóa ký tự thừa trong Description
+if 'Description' in df.columns:
+    df['Description'] = df['Description'].str.strip()
+
+# chuyển USD -> VND
+if 'Price' in df.columns:
+    usd_to_vnd = 24000
+    df['Price_VND'] = df['Price'] * usd_to_vnd
+
+print("Dữ liệu sau khi chuẩn hóa:")
+print(df.head())
+
+# lưu file mới
+df.to_csv("ITA105_Lab_1_clean.csv", index=False)
+
+print("\nFile đã lưu: ITA105_Lab_1_clean.csv")
